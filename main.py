@@ -1,88 +1,114 @@
-import asyncio
+import random
 from telegram import Update,InlineKeyboardButton,InlineKeyboardMarkup
 from telegram.ext import ApplicationBuilder,CommandHandler,MessageHandler,filters,ContextTypes,CallbackQueryHandler
 
 BOT_TOKEN="8780196442:AAG8Yb5PEZqB2lBcdO71Ux14unk3f8OGs-c"
 
-def menu():
+user_emails={}
+
+def amount_menu():
+    return InlineKeyboardMarkup([
+        [
+            InlineKeyboardButton("100",callback_data="100"),
+            InlineKeyboardButton("150",callback_data="150"),
+            InlineKeyboardButton("220",callback_data="220")
+        ]
+    ])
+
+def again_menu():
     return InlineKeyboardMarkup([
         [InlineKeyboardButton("Generate Again",callback_data="again")]
     ])
 
-def generate(email):
+def generate(email,amount):
 
-    try:
+    name,domain=email.split("@")
 
-        name,domain=email.split("@")
+    results=set()
 
-        results=[]
+    while len(results)<amount:
 
-        for i in range(len(name)):
+        temp=list(name)
 
-            new=name[:i]+name[i].upper()+name[i+1:]
+        # random uppercase
+        for i in range(len(temp)):
+            if random.choice([True,False]):
+                temp[i]=temp[i].upper()
 
-            results.append(new+"@"+domain)
+        new="".join(temp)
 
-        return results[:100]
+        # random dot
+        if len(new)>3:
+            pos=random.randint(1,len(new)-1)
+            new=new[:pos]+"."+new[pos:]
 
-    except:
+        results.add(new+"@"+domain)
 
-        return []
+    return list(results)
 
 async def start(update:Update,context:ContextTypes.DEFAULT_TYPE):
 
     await update.message.reply_text(
-
         "Send Gmail\nExample:\nexample@gmail.com"
-
     )
 
-async def email_handler(update:Update,context:ContextTypes.DEFAULT_TYPE):
+async def handle_email(update:Update,context:ContextTypes.DEFAULT_TYPE):
 
-    email=update.message.text.lower()
+    email=update.message.text
 
-    data=generate(email)
+    if "@" not in email:
 
-    if len(data)==0:
-
-        await update.message.reply_text("Invalid Email")
+        await update.message.reply_text("Send valid Gmail")
 
         return
 
-    text="Generated Emails:\n\n"
-
-    for i in data:
-
-        text+=i+"\n"
+    user_emails[update.message.chat_id]=email
 
     await update.message.reply_text(
-
-        text,
-
-        reply_markup=menu()
-
+        "Select amount:",
+        reply_markup=amount_menu()
     )
 
-async def button(update:Update,context:ContextTypes.DEFAULT_TYPE):
+async def buttons(update:Update,context:ContextTypes.DEFAULT_TYPE):
 
-    q=update.callback_query
+    query=update.callback_query
 
-    await q.answer()
+    await query.answer()
 
-    await q.message.reply_text(
+    user_id=query.message.chat_id
 
-        "Send new Gmail"
+    if query.data=="again":
 
+        await query.message.reply_text(
+            "Select amount:",
+            reply_markup=amount_menu()
+        )
+
+        return
+
+    amount=int(query.data)
+
+    email=user_emails.get(user_id)
+
+    results=generate(email,amount)
+
+    text="Generated Emails:\n\n"
+
+    for i,g in enumerate(results,1):
+
+        text+=f"{i} → {g}\n"
+
+    await query.message.reply_text(
+        text,
+        reply_markup=again_menu()
     )
 
 app=ApplicationBuilder().token(BOT_TOKEN).build()
 
 app.add_handler(CommandHandler("start",start))
 
-app.add_handler(MessageHandler(filters.TEXT,email_handler))
+app.add_handler(MessageHandler(filters.TEXT,handle_email))
 
-app.add_handler(CallbackQueryHandler(button))
-
-print("Bot Running")
+app.add_handler(CallbackQueryHandler(buttons))
 
 app.run_polling()
