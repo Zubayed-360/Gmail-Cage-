@@ -30,14 +30,12 @@ def generate(email,amount):
 
         temp=list(name)
 
-        # random uppercase
         for i in range(len(temp)):
             if random.choice([True,False]):
                 temp[i]=temp[i].upper()
 
         new="".join(temp)
 
-        # random dot
         if len(new)>3:
             pos=random.randint(1,len(new)-1)
             new=new[:pos]+"."+new[pos:]
@@ -50,6 +48,28 @@ async def start(update:Update,context:ContextTypes.DEFAULT_TYPE):
 
     await update.message.reply_text(
         "Send Gmail\nExample:\nexample@gmail.com"
+    )
+
+async def owner(update:Update,context:ContextTypes.DEFAULT_TYPE):
+
+    keyboard=[
+        [InlineKeyboardButton("Bot Owner",url="https://t.me/mdzubayed")]
+    ]
+
+    await update.message.reply_text(
+        "Bot Owner: @mdzubayed",
+        reply_markup=InlineKeyboardMarkup(keyboard)
+    )
+
+async def team(update:Update,context:ContextTypes.DEFAULT_TYPE):
+
+    keyboard=[
+        [InlineKeyboardButton("Join RabbiBD Team",url="https://t.me/RabbiBD1212")]
+    ]
+
+    await update.message.reply_text(
+        "RabbiBD Work Team",
+        reply_markup=InlineKeyboardMarkup(keyboard)
     )
 
 async def handle_email(update:Update,context:ContextTypes.DEFAULT_TYPE):
@@ -106,6 +126,8 @@ async def buttons(update:Update,context:ContextTypes.DEFAULT_TYPE):
 app=ApplicationBuilder().token(BOT_TOKEN).build()
 
 app.add_handler(CommandHandler("start",start))
+app.add_handler(CommandHandler("owner",owner))
+app.add_handler(CommandHandler("team",team))
 
 app.add_handler(MessageHandler(filters.TEXT,handle_email))
 
