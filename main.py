@@ -22,25 +22,25 @@ def again_menu():
 
 def generate(email,amount):
 
-    name,domain=email.split("@")
-
     results=set()
 
     while len(results)<amount:
 
-        temp=list(name)
+        temp=""
 
-        for i in range(len(temp)):
-            if random.choice([True,False]):
-                temp[i]=temp[i].upper()
+        for ch in email:   # পুরো email change হবে
 
-        new="".join(temp)
+            if ch.isalpha():
 
-        if len(new)>3:
-            pos=random.randint(1,len(new)-1)
-            new=new[:pos]+"."+new[pos:]
+                if random.choice([True,False]):
+                    temp+=ch.upper()
+                else:
+                    temp+=ch.lower()
 
-        results.add(new+"@"+domain)
+            else:
+                temp+=ch   # dot, number, @ same থাকবে
+
+        results.add(temp)
 
     return list(results)
 
