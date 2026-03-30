@@ -42,19 +42,25 @@ def generate(email,amount):
 
         results.add(temp)
 
-    return sorted(list(results))
+    return sorted(results)
 
 
 def protect_email(g):
 
-    # break telegram auto detection completely
+    # Stop telegram auto email detection
     g=g.replace("@","@\u200b")
     g=g.replace(".",".\u200b")
-    
+
     return g
 
 
 async def start(update:Update,context:ContextTypes.DEFAULT_TYPE):
+
+    await update.message.reply_text(
+        "Send Gmail\nExample:\nexample@gmail.com"
+    )
+
+async def generate_cmd(update:Update,context:ContextTypes.DEFAULT_TYPE):
 
     await update.message.reply_text(
         "Send Gmail\nExample:\nexample@gmail.com"
@@ -143,6 +149,7 @@ async def buttons(update:Update,context:ContextTypes.DEFAULT_TYPE):
 app=ApplicationBuilder().token(BOT_TOKEN).build()
 
 app.add_handler(CommandHandler("start",start))
+app.add_handler(CommandHandler("generate",generate_cmd))
 app.add_handler(CommandHandler("owner",owner))
 app.add_handler(CommandHandler("team",team))
 
