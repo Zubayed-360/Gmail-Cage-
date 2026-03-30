@@ -28,7 +28,7 @@ def generate(email,amount):
 
         temp=""
 
-        for ch in email:   # পুরো email change হবে
+        for ch in email:
 
             if ch.isalpha():
 
@@ -38,7 +38,7 @@ def generate(email,amount):
                     temp+=ch.lower()
 
             else:
-                temp+=ch   # dot, number, @ same থাকবে
+                temp+=ch
 
         results.add(temp)
 
@@ -119,7 +119,8 @@ async def buttons(update:Update,context:ContextTypes.DEFAULT_TYPE):
         text+=f"{i} → {g}\n"
 
     await query.message.reply_text(
-        text,
+        f"<pre>{text}</pre>",
+        parse_mode="HTML",
         reply_markup=again_menu()
     )
 
