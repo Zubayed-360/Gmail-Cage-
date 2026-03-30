@@ -42,7 +42,17 @@ def generate(email,amount):
 
         results.add(temp)
 
-    return list(results)
+    return sorted(list(results))
+
+
+def protect_email(g):
+
+    # break telegram auto detection completely
+    g=g.replace("@","@\u200b")
+    g=g.replace(".",".\u200b")
+    
+    return g
+
 
 async def start(update:Update,context:ContextTypes.DEFAULT_TYPE):
 
@@ -79,7 +89,6 @@ async def handle_email(update:Update,context:ContextTypes.DEFAULT_TYPE):
     if "@" not in email or "." not in email:
 
         await update.message.reply_text("Send valid Gmail")
-
         return
 
     user_emails[update.message.chat_id]=email
@@ -103,10 +112,10 @@ async def buttons(update:Update,context:ContextTypes.DEFAULT_TYPE):
             "Select amount:",
             reply_markup=amount_menu()
         )
-
         return
 
     if user_id not in user_emails:
+
         await query.message.reply_text("Send Gmail first")
         return
 
@@ -120,14 +129,16 @@ async def buttons(update:Update,context:ContextTypes.DEFAULT_TYPE):
 
     for i,g in enumerate(results,1):
 
-        g=g.replace("@","@\u200b")   # stop blue link
-        text+=f"{i} → {g}\u2063\n"   # invisible separator for single select
+        safe_email=protect_email(g)
+
+        text+=f"{i} → {safe_email}\u2063\n"
 
     await query.message.reply_text(
         text,
         reply_markup=again_menu(),
         disable_web_page_preview=True
     )
+
 
 app=ApplicationBuilder().token(BOT_TOKEN).build()
 
