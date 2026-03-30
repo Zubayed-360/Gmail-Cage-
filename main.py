@@ -116,12 +116,14 @@ async def buttons(update:Update,context:ContextTypes.DEFAULT_TYPE):
 
     for i,g in enumerate(results,1):
 
+        g=g.replace("@","@\u200b")   # prevent auto link
         text+=f"{i} → {g}\n"
 
     await query.message.reply_text(
-        f"<pre>{text}</pre>",
-        parse_mode="HTML",
-        reply_markup=again_menu()
+        text,
+        reply_markup=again_menu(),
+        parse_mode=None,
+        disable_web_page_preview=True
     )
 
 app=ApplicationBuilder().token(BOT_TOKEN).build()
