@@ -74,9 +74,9 @@ async def team(update:Update,context:ContextTypes.DEFAULT_TYPE):
 
 async def handle_email(update:Update,context:ContextTypes.DEFAULT_TYPE):
 
-    email=update.message.text
+    email=update.message.text.strip()
 
-    if "@" not in email:
+    if "@" not in email or "." not in email:
 
         await update.message.reply_text("Send valid Gmail")
 
@@ -106,9 +106,13 @@ async def buttons(update:Update,context:ContextTypes.DEFAULT_TYPE):
 
         return
 
+    if user_id not in user_emails:
+        await query.message.reply_text("Send Gmail first")
+        return
+
     amount=int(query.data)
 
-    email=user_emails.get(user_id)
+    email=user_emails[user_id]
 
     results=generate(email,amount)
 
@@ -116,13 +120,12 @@ async def buttons(update:Update,context:ContextTypes.DEFAULT_TYPE):
 
     for i,g in enumerate(results,1):
 
-        g=g.replace("@","@\u200b")   # prevent auto link
-        text+=f"{i} → {g}\n"
+        g=g.replace("@","@\u200b")   # stop blue link
+        text+=f"{i} → {g}\u2063\n"   # invisible separator for single select
 
     await query.message.reply_text(
         text,
         reply_markup=again_menu(),
-        parse_mode=None,
         disable_web_page_preview=True
     )
 
@@ -132,7 +135,7 @@ app.add_handler(CommandHandler("start",start))
 app.add_handler(CommandHandler("owner",owner))
 app.add_handler(CommandHandler("team",team))
 
-app.add_handler(MessageHandler(filters.TEXT,handle_email))
+app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND,handle_email))
 
 app.add_handler(CallbackQueryHandler(buttons))
 
